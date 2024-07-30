@@ -1,6 +1,18 @@
 const fs = require('fs');
 const net = require('net');
 const varint = require('varint');
+const config = require('./config.json');
+
+const writeQueue = [];
+function write() {
+  const data = writeQueue.splice(0).join('\n');
+  if (data.length) {
+    console.log(data);
+    fs.appendFileSync(config.logFile, data + '\n');
+  }
+  setTimeout(write, 0);
+}
+write();
 
 const server = net.createServer((socket) => {
   socket.connected = true;
@@ -37,6 +49,7 @@ const server = net.createServer((socket) => {
             socket.end();
             break;
           }
+          writeQueue.push(`${new Date().getTime()} STATUS ${socket.remoteAddress}`);
           const response = fs.readFileSync('./status.json').toString();
           const responseData = Buffer.concat([
             Buffer.from([0x00]), // packet id
@@ -54,6 +67,7 @@ const server = net.createServer((socket) => {
             socket.end();
             break;
           }
+          writeQueue.push(`${new Date().getTime()} JOIN ${socket.remoteAddress}`);
           const response = fs.readFileSync('./disconnectMessage.json').toString();
           const responseData = Buffer.concat([
             Buffer.from([0x00]), // packet id
