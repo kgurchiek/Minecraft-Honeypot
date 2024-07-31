@@ -1,3 +1,4 @@
 {
-  "logFile": "./log.txt"
+  "logFile": "./log.txt",
+  "webhooks": []
 }

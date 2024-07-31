@@ -50,6 +50,17 @@ const server = net.createServer((socket) => {
             break;
           }
           writeQueue.push(`${new Date().getTime()} STATUS ${socket.remoteAddress}`);
+          for (const webhook of config.webhooks) {
+            fetch(webhook, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                content: `STATUS ${socket.remoteAddress}`
+              })
+            });
+          }
           const response = fs.readFileSync('./status.json').toString();
           const responseData = Buffer.concat([
             Buffer.from([0x00]), // packet id
@@ -68,6 +79,17 @@ const server = net.createServer((socket) => {
             break;
           }
           writeQueue.push(`${new Date().getTime()} JOIN ${socket.remoteAddress}`);
+          for (const webhook of config.webhooks) {
+              fetch(webhook, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                content: `JOIN ${socket.remoteAddress}`
+              })
+            });
+          }
           const response = fs.readFileSync('./disconnectMessage.json').toString();
           const responseData = Buffer.concat([
             Buffer.from([0x00]), // packet id
